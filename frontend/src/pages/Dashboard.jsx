@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editingMed, setEditingMed] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
   const [form, setForm] = useState({
     name: '', barcode: '', quantity: '', expiryDate: '', category: '', manufacturer: ''
   });
@@ -27,7 +29,6 @@ const Dashboard = () => {
   useEffect(() => { fetchMedicines(); }, []);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
@@ -88,6 +89,7 @@ const Dashboard = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
+
       {/* Header */}
       <div style={{ backgroundColor: '#2563eb', color: 'white', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0 }}>💊 MediTrack Pro</h2>
@@ -98,6 +100,7 @@ const Dashboard = () => {
       </div>
 
       <div style={{ padding: '2rem' }}>
+
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           {[
@@ -115,12 +118,9 @@ const Dashboard = () => {
         {/* Controls */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <input
-              placeholder="🔍 Search medicines..."
-              value={search}
+            <input placeholder="🔍 Search medicines..." value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem', width: '250px' }}
-            />
+              style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem', width: '250px' }} />
             <select value={filter} onChange={e => setFilter(e.target.value)}
               style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}>
               <option value="all">All Status</option>
@@ -130,7 +130,7 @@ const Dashboard = () => {
             </select>
           </div>
           <button onClick={() => { setShowForm(true); setEditingMed(null); setForm({ name: '', barcode: '', quantity: '', expiryDate: '', category: '', manufacturer: '' }); }}
-            style={{ padding: '0.6rem 1.5rem', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+            style={{ padding: '0.6rem 1.5rem', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
             ➕ Add Medicine
           </button>
         </div>
@@ -138,22 +138,30 @@ const Dashboard = () => {
         {/* Add/Edit Form */}
         {showForm && (
           <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '1.5rem' }}>
-            <h3 style={{ marginTop: 0, color: '#1e293b' }}>{editingMed ? '✏️ Edit Medicine' : '➕ Add New Medicine'}</h3>
+            <h3 style={{ marginTop: 0 }}>{editingMed ? '✏️ Edit Medicine' : '➕ Add New Medicine'}</h3>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                {[
-                  { name: 'name', placeholder: 'Medicine Name', required: true },
-                  { name: 'barcode', placeholder: 'Barcode' },
-                  { name: 'quantity', placeholder: 'Quantity', type: 'number', required: true },
-                  { name: 'expiryDate', placeholder: 'Expiry Date', type: 'date', required: true },
-                  { name: 'category', placeholder: 'Category' },
-                  { name: 'manufacturer', placeholder: 'Manufacturer' },
-                ].map(field => (
-                  <input key={field.name} name={field.name} type={field.type || 'text'}
-                    placeholder={field.placeholder} value={form[field.name]}
-                    onChange={handleChange} required={field.required}
-                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }} />
-                ))}
+                <input name="name" placeholder="Medicine Name" value={form.name} onChange={handleChange} required
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+
+                {/* Barcode field + Scan button */}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input name="barcode" placeholder="Barcode" value={form.barcode} onChange={handleChange}
+                    style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', flex: 1 }} />
+                  <button type="button" onClick={() => setShowScanner(true)}
+                    style={{ padding: '0.75rem', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                    📷
+                  </button>
+                </div>
+
+                <input name="quantity" type="number" placeholder="Quantity" value={form.quantity} onChange={handleChange} required
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                <input name="expiryDate" type="date" value={form.expiryDate} onChange={handleChange} required
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                <input name="category" placeholder="Category" value={form.category} onChange={handleChange}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                <input name="manufacturer" placeholder="Manufacturer" value={form.manufacturer} onChange={handleChange}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
               </div>
               <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
                 <button type="submit" style={{ padding: '0.75rem 2rem', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
@@ -207,6 +215,15 @@ const Dashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScanner
+          onDetected={(code) => setForm({ ...form, barcode: code })}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
     </div>
   );
 };
