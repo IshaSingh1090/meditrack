@@ -17,9 +17,12 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await API.post('/auth/login', form);
+      console.log('Login response:', res.data); // ← debug
       login(res.data.user, res.data.token);
-      navigate('/dashboard');
+      console.log('Navigating to dashboard...'); // ← debug
+      window.location.href = '/dashboard'; // ← force redirect
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed');
     }
   };
