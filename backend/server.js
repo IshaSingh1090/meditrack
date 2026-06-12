@@ -10,8 +10,8 @@ const app = express();
 
 // ✅ Fixed CORS
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
+  origin: '*',
+  credentials: false
 }));
 app.use(express.json());
 
